@@ -23,11 +23,10 @@ def check_login_allowed(
 
         changed = _reset_window_if_expired(state, timestamp, window_seconds)
         blocked_until = _as_utc(state.blocked_until)
-        if blocked_until and blocked_until > timestamp:
-            retry_after = int((blocked_until - timestamp).total_seconds())
-            return False, max(1, retry_after)
-
-        if blocked_until and blocked_until <= timestamp:
+        if blocked_until:
+            if blocked_until > timestamp:
+                retry_after = int((blocked_until - timestamp).total_seconds())
+                return False, max(1, retry_after)
             state.blocked_until = None
             changed = True
 

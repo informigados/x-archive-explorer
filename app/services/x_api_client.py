@@ -159,12 +159,13 @@ class XApiClient:
     def _sleep_backoff(self, attempt: int, retry_after: str | None = None) -> None:
         delay = min(self.max_backoff_seconds, self.backoff_seconds * (2**attempt))
         if retry_after:
+            retry_delay = None
             try:
                 retry_delay = float(retry_after)
-                if retry_delay > 0:
-                    delay = min(self.max_backoff_seconds, retry_delay)
             except (TypeError, ValueError):
-                pass
+                retry_delay = None
+            if retry_delay and retry_delay > 0:
+                delay = min(self.max_backoff_seconds, retry_delay)
         self._sleep_fn(delay)
 
     def _wait_for_endpoint_window(self, endpoint_key: str) -> None:

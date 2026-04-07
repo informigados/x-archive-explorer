@@ -9,7 +9,6 @@ from datetime import datetime, timedelta, timezone
 import pytest
 
 import app as app_module
-from app import create_app, ensure_admin_user
 from app.config import TestConfig
 from app.extensions import db
 from app.models import Archive, ImportJob, OperationMetric, Post, User
@@ -24,12 +23,12 @@ def app():
     os.environ["XAE_ADMIN_PASSWORD"] = "TestPass123!"
     os.environ["XAE_UPLOAD_FOLDER"] = upload_dir
 
-    flask_app = create_app(TestConfig)
+    flask_app = app_module.create_app(TestConfig)
     with flask_app.app_context():
         db.drop_all()
         db.create_all()
         ensure_fts_table()
-        ensure_admin_user(flask_app)
+        app_module.ensure_admin_user(flask_app)
 
     yield flask_app
     shutil.rmtree(upload_dir, ignore_errors=True)
@@ -99,7 +98,7 @@ def test_create_app_requires_strong_secret_key_outside_development():
         SECRET_KEY = "dev-change-me"
 
     with pytest.raises(RuntimeError):
-        create_app(WeakSecretConfig)
+        app_module.create_app(WeakSecretConfig)
 
 
 def test_is_flask_db_command_detection(monkeypatch):
