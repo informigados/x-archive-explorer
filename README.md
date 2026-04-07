@@ -79,7 +79,7 @@ What it does automatically:
 - Runs DB migrations (`flask db upgrade`)
 - Prints current default login variables for local bootstrap
 - Opens browser automatically
-- Starts the app on the selected port
+- Starts the app on the selected port using `waitress` (production-grade WSGI server)
 
 Default local credentials (if not overridden by environment variables):
 

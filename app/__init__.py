@@ -1,8 +1,10 @@
 import os
 import re
 import secrets
+import sqlite3
 import sys
 import time
+from datetime import date, datetime
 from pathlib import Path
 from uuid import uuid4
 
@@ -26,6 +28,7 @@ REQUEST_ID_PATTERN = re.compile(r"^[A-Za-z0-9._:-]{8,128}$")
 def create_app(config_class=Config):
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_object(config_class)
+    _register_sqlite_adapters()
     _apply_secret_key_policy(app)
 
     Path(app.config["UPLOAD_FOLDER"]).mkdir(parents=True, exist_ok=True)
@@ -385,6 +388,11 @@ def _apply_secret_key_policy(app: Flask) -> None:
         raise RuntimeError(
             "XAE_SECRET_KEY ausente ou fraca para ambiente não-desenvolvimento. Defina um segredo forte antes de iniciar."
         )
+
+
+def _register_sqlite_adapters() -> None:
+    sqlite3.register_adapter(datetime, lambda value: value.isoformat(sep=" "))
+    sqlite3.register_adapter(date, lambda value: value.isoformat())
 
 
 def _request_is_secure(app: Flask) -> bool:

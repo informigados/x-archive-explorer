@@ -68,9 +68,9 @@ echo.
 echo [6/7] Opening browser...
 start "" powershell -NoProfile -Command "Start-Sleep -Seconds 2; Start-Process 'http://127.0.0.1:%XAE_PORT%/'"
 
-echo [7/7] Starting X Archive Explorer on port %XAE_PORT%...
+echo [7/7] Starting X Archive Explorer on port %XAE_PORT% with Waitress...
 echo URL: http://127.0.0.1:%XAE_PORT%/
-"%PY%" run.py
+"%PY%" -m waitress --listen=%XAE_HOST%:%XAE_PORT% run:app
 goto :eof
 
 :fail

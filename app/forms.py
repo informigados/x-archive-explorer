@@ -45,9 +45,9 @@ class ApiSyncForm(FlaskForm):
         default="merge",
         validators=[DataRequired()],
     )
-    include_replies = BooleanField("Incluir replies", default=True)
+    include_replies = BooleanField("Incluir respostas", default=True)
     incremental_sync = BooleanField("Sync incremental (usar since_id)", default=True)
-    include_conversation_replies = BooleanField("Buscar replies por conversation_id", default=False)
+    include_conversation_replies = BooleanField("Buscar respostas por conversation_id", default=False)
     max_pages = IntegerField("Máximo de páginas", validators=[DataRequired(), NumberRange(min=1, max=50)], default=3)
     max_results = IntegerField(
         "Tweets por página",
@@ -60,7 +60,7 @@ class ApiSyncForm(FlaskForm):
         default=3,
     )
     conversation_reply_window_days = IntegerField(
-        "Janela de replies da conversa (dias)",
+        "Janela de respostas da conversa (dias)",
         validators=[DataRequired(), NumberRange(min=0, max=365)],
         default=30,
     )
