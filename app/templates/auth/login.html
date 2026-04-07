@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}{{ t("login.title") }} | {{ t("app.name") }}{% endblock %}
+{% block content %}
+<section class="card auth-card">
+  <h1>{{ t("login.title") }}</h1>
+  <p class="muted">{{ t("login.subtitle") }}</p>
+  <form method="post" class="form-grid">
+    {{ form.hidden_tag() }}
+    <div class="field">
+      <label for="{{ form.email.id }}">{{ t("login.email") }}</label>
+      {{ form.email(placeholder=t("login.placeholder.identity")) }}
+      {% for error in form.email.errors %}
+      <small class="field-error">{{ error }}</small>
+      {% endfor %}
+    </div>
+
+    <div class="field">
+      <label for="{{ form.password.id }}">{{ t("login.password") }}</label>
+      {{ form.password(placeholder="********") }}
+      {% for error in form.password.errors %}
+      <small class="field-error">{{ error }}</small>
+      {% endfor %}
+    </div>
+
+    <button type="submit" class="btn-primary" data-submit-loading="{{ t('ui.loading') }}">{{ t("login.title") }}</button>
+  </form>
+</section>
+{% endblock %}

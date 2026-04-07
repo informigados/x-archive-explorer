@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}{{ t("users.title") }} | {{ t("app.name") }}{% endblock %}
+{% block content %}
+<section class="page-head">
+  <h1>{{ t("users.title") }}</h1>
+  <a class="btn-primary" href="{{ url_for('auth.users_create') }}">{{ t("users.new") }}</a>
+</section>
+
+<section class="card">
+  <div class="table-wrap">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>{{ t("users.username") }}</th>
+        <th>{{ t("users.email") }}</th>
+        <th>{{ t("users.type") }}</th>
+        <th class="actions-cell">{{ t("users.actions") }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for user in users %}
+      {% set is_default = default_user and user.id == default_user.id %}
+      <tr>
+        <td>{{ user.id }}</td>
+        <td>{{ user.name }}</td>
+        <td>{{ user.email }}</td>
+        <td>
+          {% if user.role == "admin" %}
+          <span class="pill pill-admin">{{ t("users.role_admin") }}</span>
+          {% else %}
+          <span class="pill">{{ t("users.role_viewer") }}</span>
+          {% endif %}
+          {% if is_default %}
+          <span class="pill pill-default">{{ t("users.default") }}</span>
+          {% endif %}
+        </td>
+        <td class="actions-cell">
+          <div class="actions-inline">
+            <a class="btn-secondary" href="{{ url_for('auth.users_password', user_id=user.id) }}">{{ t("users.change_password") }}</a>
+            {% if not is_default %}
+            <a class="btn-secondary" href="{{ url_for('auth.users_edit', user_id=user.id) }}">{{ t("users.edit") }}</a>
+            <form method="post" action="{{ url_for('auth.users_delete', user_id=user.id) }}" data-confirm="{{ t('users.delete_confirm') }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="btn-danger">{{ t("users.delete") }}</button>
+            </form>
+            {% else %}
+            <span class="muted">{{ t("users.default_locked") }}</span>
+            {% endif %}
+          </div>
+        </td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="5" class="muted">{{ t("users.none") }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</section>
+
+{% if page_data and page_data.pages > 1 %}
+<section class="pagination">
+  {% if page_data.has_prev %}
+  <a href="{{ url_for('auth.users_list', page=page_data.prev_num) }}">&laquo; {{ t("search.previous") }}</a>
+  {% endif %}
+  <span>{{ t("search.page", page=page_data.page, pages=page_data.pages) }}</span>
+  {% if page_data.has_next %}
+  <a href="{{ url_for('auth.users_list', page=page_data.next_num) }}">{{ t("search.next") }} &raquo;</a>
+  {% endif %}
+</section>
+{% endif %}
+{% endblock %}

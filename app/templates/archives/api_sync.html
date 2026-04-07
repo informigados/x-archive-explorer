@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block title %}{{ t("archive.api_sync.submit") }} | {{ archive.name }}{% endblock %}
+{% block content %}
+<section class="card">
+  <h1>{{ t("archive.api_sync.title", name=archive.name) }}</h1>
+  <p class="muted">
+    {{ t("archive.api_sync.subtitle") }}
+  </p>
+
+  {% if not api_enabled %}
+  <p class="flash flash-warning">
+    {{ t("archive.api_sync.disabled") }}
+  </p>
+  {% endif %}
+
+  {% if sync_state %}
+  <article class="card">
+    <h2>{{ t("archive.api_sync.state.title") }}</h2>
+    <ul class="simple-list">
+      <li>{{ t("archive.detail.source_username") }}: <strong>{{ sync_state.source_username or "-" }}</strong></li>
+      <li>{{ t("archive.detail.source_user_id") }}: <strong>{{ sync_state.source_user_id or "-" }}</strong></li>
+      <li>{{ t("archive.detail.current_since_id") }}: <strong>{{ sync_state.since_id or "-" }}</strong></li>
+      <li>{{ t("archive.detail.last_status") }}: <strong>{{ sync_state.last_sync_status or "-" }}</strong></li>
+      <li>{{ t("archive.detail.last_run") }}: <strong>{{ sync_state.last_synced_at.strftime("%Y-%m-%d %H:%M:%S") if sync_state.last_synced_at else "-" }}</strong></li>
+      <li>{{ t("archive.detail.last_error") }}: <strong>{{ sync_state.last_sync_error or "-" }}</strong></li>
+    </ul>
+  </article>
+  {% endif %}
+
+  <form method="post" class="form-grid">
+    {{ form.hidden_tag() }}
+
+    <div class="field">
+      <label for="{{ form.username.id }}">{{ t("archive.api_sync.username") }}</label>
+      {{ form.username(placeholder="ex: jack") }}
+      {% for error in form.username.errors %}
+      <small class="field-error">{{ error }}</small>
+      {% endfor %}
+    </div>
+
+    <div class="field">
+      <label for="{{ form.user_id.id }}">{{ t("archive.api_sync.user_id") }}</label>
+      {{ form.user_id(placeholder="ex: 12") }}
+      {% for error in form.user_id.errors %}
+      <small class="field-error">{{ error }}</small>
+      {% endfor %}
+    </div>
+
+    <div class="field">
+      <label for="{{ form.import_mode.id }}">{{ t("archive.api_sync.mode") }}</label>
+      {{ form.import_mode() }}
+      {% for error in form.import_mode.errors %}
+      <small class="field-error">{{ error }}</small>
+      {% endfor %}
+    </div>
+
+    <div class="field">
+      <label for="{{ form.max_pages.id }}">{{ t("archive.api_sync.max_pages") }}</label>
+      {{ form.max_pages(min="1", max="50") }}
+      {% for error in form.max_pages.errors %}
+      <small class="field-error">{{ error }}</small>
+      {% endfor %}
+    </div>
+
+    <div class="field">
+      <label for="{{ form.max_results.id }}">{{ t("archive.api_sync.max_results") }}</label>
+      {{ form.max_results(min="5", max="100") }}
+      {% for error in form.max_results.errors %}
+      <small class="field-error">{{ error }}</small>
+      {% endfor %}
+    </div>
+
+    <div class="field">
+      <label for="{{ form.conversation_max_pages.id }}">{{ t("archive.api_sync.conversation_pages") }}</label>
+      {{ form.conversation_max_pages(min="1", max="20") }}
+      {% for error in form.conversation_max_pages.errors %}
+      <small class="field-error">{{ error }}</small>
+      {% endfor %}
+    </div>
+
+    <div class="field">
+      <label for="{{ form.conversation_reply_window_days.id }}">{{ t("archive.api_sync.conversation_window_days") }}</label>
+      {{ form.conversation_reply_window_days(min="0", max="365") }}
+      {% for error in form.conversation_reply_window_days.errors %}
+      <small class="field-error">{{ error }}</small>
+      {% endfor %}
+    </div>
+
+    <label class="field-full">
+      {{ form.include_replies() }} {{ t("archive.api_sync.include_replies") }}
+    </label>
+    <label class="field-full">
+      {{ form.incremental_sync() }} {{ t("archive.api_sync.incremental") }}
+    </label>
+    <label class="field-full">
+      {{ form.include_conversation_replies() }} {{ t("archive.api_sync.include_conversation_replies") }}
+    </label>
+
+    <button type="submit" class="btn-primary field-full" data-submit-loading="{{ t('ui.loading') }}">{{ t("archive.api_sync.submit") }}</button>
+  </form>
+</section>
+{% endblock %}

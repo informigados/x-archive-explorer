@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Post {{ post.external_post_id }} | {{ t("app.name") }}{% endblock %}
+{% block content %}
+<section class="card">
+  <h1>Post #{{ post.external_post_id }}</h1>
+  <p class="muted">
+    @{{ post.author_handle or t("search.unknown_author") }} |
+    {{ post.created_at.strftime("%Y-%m-%d %H:%M:%S") if post.created_at else "-" }} |
+    {% if post.is_reply %}{{ t("search.post.reply") }}{% else %}{{ t("search.post.post") }}{% endif %}
+  </p>
+  <p>{{ post.text_raw or t("search.no_text") }}</p>
+</section>
+
+<section class="grid two-cols">
+  <article class="card">
+    <h2>{{ t("post.detail.metadata") }}</h2>
+    <ul class="simple-list">
+      <li>{{ t("post.detail.conversation_id") }}: <strong>{{ post.conversation_id or "-" }}</strong></li>
+      <li>{{ t("post.detail.reply_to_post") }}: <strong>{{ post.reply_to_post_id or "-" }}</strong></li>
+      <li>{{ t("post.detail.reply_to_user") }}: <strong>{{ post.reply_to_user_handle or "-" }}</strong></li>
+      <li>{{ t("post.detail.with_media") }}: <strong>{{ post.has_media }}</strong></li>
+      <li>{{ t("post.detail.with_links") }}: <strong>{{ post.has_links }}</strong></li>
+      <li>{{ t("post.detail.language") }}: <strong>{{ post.language or "-" }}</strong></li>
+      <li>{{ t("post.detail.source") }}: <strong>{{ post.source_app or "-" }}</strong></li>
+    </ul>
+  </article>
+  <article class="card">
+    <h2>{{ t("post.detail.entities") }}</h2>
+    <p><strong>{{ t("post.detail.hashtags") }}:</strong> {% for hashtag_item in post.hashtags %}#{{ hashtag_item.tag }} {% else %}-{% endfor %}</p>
+    <p><strong>{{ t("post.detail.mentions") }}:</strong> {% for mention_item in post.mentions %}@{{ mention_item.handle }} {% else %}-{% endfor %}</p>
+    <p><strong>{{ t("post.detail.urls") }}:</strong></p>
+    <ul class="simple-list">
+      {% for u in post.urls %}
+      <li><a href="{{ u.expanded_url or u.url }}" target="_blank" rel="noreferrer">{{ u.expanded_url or u.url }}</a></li>
+      {% else %}
+      <li>-</li>
+      {% endfor %}
+    </ul>
+  </article>
+</section>
+
+{% if post.media %}
+<section class="card">
+  <h2>{{ t("post.detail.media") }}</h2>
+  <div class="media-grid">
+    {% for item in post.media %}
+    {% set src = media_src(item) %}
+    {% if src %}
+    <article class="media-card">
+      {% if media_is_video(item, src) %}
+      <video controls preload="metadata" class="media-preview">
+        <source src="{{ src }}">
+      </video>
+      {% else %}
+      <img src="{{ src }}" alt="{{ t('post.detail.media_alt', id=post.external_post_id) }}" class="media-preview">
+      {% endif %}
+      <p class="muted media-caption">{{ item.media_type or t("post.detail.media_fallback") }}</p>
+    </article>
+    {% endif %}
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if conversation_posts %}
+<section class="card">
+  <h2>{{ t("post.detail.related_conversation") }}</h2>
+  <ul class="simple-list">
+    {% for item in conversation_posts %}
+    <li>
+      <a href="{{ url_for('search.post_detail', post_id=item.id) }}">#{{ item.external_post_id }}</a>
+      <span class="muted">@{{ item.author_handle or t("search.unknown_author") }}</span>
+      <span>{{ item.created_at.strftime("%Y-%m-%d %H:%M") if item.created_at else "-" }}</span>
+    </li>
+    {% endfor %}
+  </ul>
+  {% if conversation_page and conversation_page.pages > 1 %}
+  <div class="pagination">
+    {% if conversation_page.has_prev %}
+    <a href="{{ url_for('search.post_detail', post_id=post.id, conversation_page=conversation_page.prev_num) }}">&laquo; {{ t("search.previous") }}</a>
+    {% endif %}
+    <span>{{ t("search.page", page=conversation_page.page, pages=conversation_page.pages) }}</span>
+    {% if conversation_page.has_next %}
+    <a href="{{ url_for('search.post_detail', post_id=post.id, conversation_page=conversation_page.next_num) }}">{{ t("search.next") }} &raquo;</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</section>
+{% endif %}
+{% endblock %}

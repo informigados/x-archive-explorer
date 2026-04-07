@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}{{ t("nav.search") }} | {{ t("app.name") }}{% endblock %}
+{% block content %}
+<section class="card">
+  <h1>{{ t("search.title") }}</h1>
+  <form method="get" class="search-grid">
+    <div class="field">
+      <label>{{ t("search.keyword") }}</label>
+      <input type="text" name="q" value="{{ filters.q }}" placeholder='{{ t("search.placeholder.keyword") }}'>
+    </div>
+
+    <div class="field">
+      <label>{{ t("search.archive") }}</label>
+      <select name="archive_id">
+        <option value="">{{ t("search.all") }}</option>
+        {% for archive in archives %}
+        <option value="{{ archive.id }}" {% if filters.archive_id == archive.id %}selected{% endif %}>
+          {{ archive.name }}
+        </option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="field">
+      <label>{{ t("search.author") }}</label>
+      <input type="text" name="author" value="{{ filters.author }}" placeholder="{{ t('search.placeholder.author') }}">
+    </div>
+
+    <div class="field">
+      <label>{{ t("search.language") }}</label>
+      <input type="text" name="language" value="{{ filters.language }}" placeholder="{{ t('search.placeholder.language') }}">
+    </div>
+
+    <div class="field">
+      <label>{{ t("search.date_from") }}</label>
+      <input type="date" name="date_from" value="{{ filters.date_from }}">
+    </div>
+
+    <div class="field">
+      <label>{{ t("search.date_to") }}</label>
+      <input type="date" name="date_to" value="{{ filters.date_to }}">
+    </div>
+
+    <div class="field">
+      <label>{{ t("search.sort") }}</label>
+      <select name="sort">
+        <option value="newest" {% if filters.sort == "newest" %}selected{% endif %}>{{ t("search.sort.newest") }}</option>
+        <option value="oldest" {% if filters.sort == "oldest" %}selected{% endif %}>{{ t("search.sort.oldest") }}</option>
+      </select>
+    </div>
+
+    <div class="checks field-full">
+      <label><input type="checkbox" name="reply_only" value="1" {% if filters.reply_only %}checked{% endif %}> {{ t("search.reply_only") }}</label>
+      <label><input type="checkbox" name="media_only" value="1" {% if filters.media_only %}checked{% endif %}> {{ t("search.media_only") }}</label>
+      <label><input type="checkbox" name="links_only" value="1" {% if filters.links_only %}checked{% endif %}> {{ t("search.links_only") }}</label>
+    </div>
+
+    <button type="submit" class="btn-primary field-full">{{ t("search.submit") }}</button>
+  </form>
+</section>
+
+<section class="page-head">
+  <p><strong>{{ t("search.results_count", count=page_data.total) }}</strong></p>
+  <div class="actions-inline">
+    <a class="btn-secondary" href="{{ url_for('search.export_csv') }}?{{ make_query(filters) }}">{{ t("search.export.csv") }}</a>
+    <a class="btn-secondary" href="{{ url_for('search.export_json') }}?{{ make_query(filters) }}">{{ t("search.export.json") }}</a>
+    <a class="btn-secondary" href="{{ url_for('search.export_html') }}?{{ make_query(filters) }}">{{ t("search.export.html") }}</a>
+  </div>
+</section>
+
+<section class="card">
+  <ul class="result-list">
+    {% for post in page_data.items %}
+    <li class="result-item">
+      <div class="meta">
+        <span>#{{ post.external_post_id }}</span>
+        <span>@{{ post.author_handle or t("search.unknown_author") }}</span>
+        <span>{{ post.created_at.strftime("%Y-%m-%d %H:%M") if post.created_at else "-" }}</span>
+        <span>{% if post.is_reply %}{{ t("search.post.reply") }}{% else %}{{ t("search.post.post") }}{% endif %}</span>
+      </div>
+      {% if post.media %}
+      {% set preview = post.media[0] %}
+      {% set src = media_src(preview) %}
+      {% if src %}
+      <div class="media-inline">
+        {% if media_is_video(preview, src) %}
+        <video controls preload="metadata" class="media-thumb">
+          <source src="{{ src }}">
+        </video>
+        {% else %}
+        <img src="{{ src }}" alt="{{ t('search.preview_alt', id=post.external_post_id) }}" class="media-thumb">
+        {% endif %}
+      </div>
+      {% endif %}
+      {% endif %}
+      <p>{{ post.text_raw or t("search.no_text") }}</p>
+      <div class="actions-inline">
+        <a href="{{ url_for('search.post_detail', post_id=post.id) }}">{{ t("search.details") }}</a>
+      </div>
+    </li>
+    {% else %}
+    <li class="muted">{{ t("search.results.none") }}</li>
+    {% endfor %}
+  </ul>
+</section>
+
+{% if page_data.pages > 1 %}
+<section class="pagination">
+  {% if page_data.has_prev %}
+  <a href="{{ url_for('search.search_view') }}?{{ make_query(filters, page=page_data.prev_num) }}">&laquo; {{ t("search.previous") }}</a>
+  {% endif %}
+  <span>{{ t("search.page", page=page_data.page, pages=page_data.pages) }}</span>
+  {% if page_data.has_next %}
+  <a href="{{ url_for('search.search_view') }}?{{ make_query(filters, page=page_data.next_num) }}">{{ t("search.next") }} &raquo;</a>
+  {% endif %}
+</section>
+{% endif %}
+{% endblock %}

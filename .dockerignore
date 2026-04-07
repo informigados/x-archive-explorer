@@ -1,0 +1,17 @@
+.git
+.gitignore
+.pytest_cache
+.cache
+.benchmarks
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.venv
+venv
+docs
+tests
+*.md
+!README.md
+instance
+uploads

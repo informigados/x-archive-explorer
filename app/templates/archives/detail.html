@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% block title %}{{ archive.name }} | {{ t("app.name") }}{% endblock %}
+{% block content %}
+<section class="page-head">
+  <div>
+    <h1>{{ archive.name }}</h1>
+    <p class="muted">{{ archive.description or "-" }}</p>
+  </div>
+  <div class="actions-inline">
+    {% if current_user.is_admin %}
+    <a class="btn-secondary" href="{{ url_for('archives.import_archive', archive_id=archive.id) }}">{{ t("archive.import.file") }}</a>
+    <a class="btn-secondary" href="{{ url_for('archives.api_sync', archive_id=archive.id) }}">{{ t("archive.detail.sync_action") }}</a>
+    {% endif %}
+    <a class="btn-secondary" href="{{ url_for('search.search_view', archive_id=archive.id) }}">{{ t("archive.detail.search_in_archive") }}</a>
+  </div>
+</section>
+
+<section class="grid two-cols">
+  <article class="card">
+    <h2>{{ t("archive.detail.summary") }}</h2>
+    <ul class="simple-list">
+      <li>{{ t("archive.detail.status") }}: <strong>{{ archive.status }}</strong></li>
+      <li>{{ t("archive.detail.posts") }}: <strong>{{ archive.total_posts }}</strong></li>
+      <li>{{ t("archive.detail.replies") }}: <strong>{{ archive.total_replies }}</strong></li>
+      <li>{{ t("archive.detail.original_file") }}: <strong>{{ archive.original_filename or "-" }}</strong></li>
+      <li>{{ t("archive.detail.imported_at") }}: <strong>{{ archive.imported_at.strftime("%Y-%m-%d %H:%M") if archive.imported_at else "-" }}</strong></li>
+    </ul>
+    {% if archive.notes %}
+    <p class="flash flash-error">{{ archive.notes }}</p>
+    {% endif %}
+  </article>
+
+  <article class="card">
+    <h2>{{ t("archive.detail.import_logs") }}</h2>
+    <ul class="simple-list">
+      {% for log in logs_page.items %}
+      <li>
+        <strong>[{{ log.level|upper }}]</strong>
+        {{ log.message }}
+        <span class="muted">({{ log.created_at.strftime("%Y-%m-%d %H:%M:%S") }})</span>
+      </li>
+      {% else %}
+      <li class="muted">{{ t("archive.detail.no_logs") }}</li>
+      {% endfor %}
+    </ul>
+    {% if logs_page.pages > 1 %}
+    <div class="pagination">
+      {% if logs_page.has_prev %}
+      <a href="{{ url_for('archives.archive_detail', archive_id=archive.id, logs_page=logs_page.prev_num, ops_page=ops_page.page, jobs_page=jobs_page.page) }}">&laquo; {{ t("search.previous") }}</a>
+      {% endif %}
+      <span>{{ t("search.page", page=logs_page.page, pages=logs_page.pages) }}</span>
+      {% if logs_page.has_next %}
+      <a href="{{ url_for('archives.archive_detail', archive_id=archive.id, logs_page=logs_page.next_num, ops_page=ops_page.page, jobs_page=jobs_page.page) }}">{{ t("search.next") }} &raquo;</a>
+      {% endif %}
+    </div>
+    {% endif %}
+  </article>
+</section>
+
+{% if archive.api_sync_state %}
+<section class="card">
+  <h2>{{ t("archive.detail.sync_state") }}</h2>
+  <ul class="simple-list">
+    <li>{{ t("archive.detail.source_username") }}: <strong>{{ archive.api_sync_state.source_username or "-" }}</strong></li>
+    <li>{{ t("archive.detail.source_user_id") }}: <strong>{{ archive.api_sync_state.source_user_id or "-" }}</strong></li>
+    <li>{{ t("archive.detail.current_since_id") }}: <strong>{{ archive.api_sync_state.since_id or "-" }}</strong></li>
+    <li>{{ t("archive.detail.last_status") }}: <strong>{{ archive.api_sync_state.last_sync_status or "-" }}</strong></li>
+    <li>{{ t("archive.detail.last_run") }}: <strong>{{ archive.api_sync_state.last_synced_at.strftime("%Y-%m-%d %H:%M:%S") if archive.api_sync_state.last_synced_at else "-" }}</strong></li>
+    <li>{{ t("archive.detail.last_error") }}: <strong>{{ archive.api_sync_state.last_sync_error or "-" }}</strong></li>
+  </ul>
+</section>
+{% endif %}
+
+<section class="card">
+  <h2>{{ t("archive.detail.recent_archive_ops") }}</h2>
+  <ul class="simple-list">
+    {% for metric in ops_page.items %}
+    <li>
+      <strong>{{ metric.operation_type }}</strong>
+      <span class="muted">{{ t("archive.detail.last_status") | lower }}={{ metric.status }}</span>
+      <span class="muted">{{ t("archive.detail.source") }}={{ metric.source or "-" }}</span>
+      <span class="muted">{{ t("archive.detail.duration") }}={{ metric.duration_ms or 0 }}ms</span>
+      <span class="muted">{{ metric.started_at.strftime("%Y-%m-%d %H:%M:%S") if metric.started_at else "-" }}</span>
+      {% if metric.error_message %}
+      <div class="flash flash-error">{{ t("archive.detail.error") }}: {{ metric.error_message }}</div>
+      {% endif %}
+    </li>
+    {% else %}
+    <li class="muted">{{ t("archive.detail.no_archive_ops") }}</li>
+    {% endfor %}
+  </ul>
+  {% if ops_page.pages > 1 %}
+  <div class="pagination">
+    {% if ops_page.has_prev %}
+    <a href="{{ url_for('archives.archive_detail', archive_id=archive.id, logs_page=logs_page.page, ops_page=ops_page.prev_num, jobs_page=jobs_page.page) }}">&laquo; {{ t("search.previous") }}</a>
+    {% endif %}
+    <span>{{ t("search.page", page=ops_page.page, pages=ops_page.pages) }}</span>
+    {% if ops_page.has_next %}
+    <a href="{{ url_for('archives.archive_detail', archive_id=archive.id, logs_page=logs_page.page, ops_page=ops_page.next_num, jobs_page=jobs_page.page) }}">{{ t("search.next") }} &raquo;</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</section>
+
+<section class="card">
+  <h2>{{ t("archive.detail.import_queue") }}</h2>
+  <ul class="simple-list">
+    {% for job in jobs_page.items %}
+    <li>
+      <strong>Job #{{ job.id }}</strong>
+      <span class="muted">{{ t("archive.detail.last_status") | lower }}={{ job.status }}</span>
+      <span class="muted">{{ t("archive.detail.mode") }}={{ job.import_mode }}</span>
+      <span class="muted">{{ t("archive.detail.progress") }}={{ job.progress_percent }}%</span>
+      <span class="muted">{{ t("archive.detail.attempts") }}={{ job.attempt_count }}/{{ job.max_retries + 1 }}</span>
+      {% if job.last_error %}
+      <div class="flash flash-error">{{ t("archive.detail.error") }}: {{ job.last_error }}</div>
+      {% endif %}
+      <div class="muted">
+        {{ t("archive.detail.created_at") }} {{ job.created_at.strftime("%Y-%m-%d %H:%M:%S") }}
+        {% if job.finished_at %} | {{ t("archive.detail.finished_at") }} {{ job.finished_at.strftime("%Y-%m-%d %H:%M:%S") }}{% endif %}
+      </div>
+      {% if job.status == "failed" %}
+      <form method="post" action="{{ url_for('archives.retry_job', job_id=job.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn-secondary">{{ t("archive.detail.requeue") }}</button>
+      </form>
+      {% endif %}
+    </li>
+    {% else %}
+      <li class="muted">{{ t("archive.detail.no_jobs") }}</li>
+    {% endfor %}
+  </ul>
+  {% if jobs_page.pages > 1 %}
+  <div class="pagination">
+    {% if jobs_page.has_prev %}
+    <a href="{{ url_for('archives.archive_detail', archive_id=archive.id, logs_page=logs_page.page, ops_page=ops_page.page, jobs_page=jobs_page.prev_num) }}">&laquo; {{ t("search.previous") }}</a>
+    {% endif %}
+    <span>{{ t("search.page", page=jobs_page.page, pages=jobs_page.pages) }}</span>
+    {% if jobs_page.has_next %}
+    <a href="{{ url_for('archives.archive_detail', archive_id=archive.id, logs_page=logs_page.page, ops_page=ops_page.page, jobs_page=jobs_page.next_num) }}">{{ t("search.next") }} &raquo;</a>
+    {% endif %}
+  </div>
+  {% endif %}
+</section>
+{% endblock %}

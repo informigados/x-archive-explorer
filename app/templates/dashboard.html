@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+{% block title %}{{ t("nav.dashboard") }} | {{ t("app.name") }}{% endblock %}
+{% block content %}
+<section class="grid stats-grid">
+  <article class="card stat-card">
+    <h2>{{ t("dashboard.total_posts") }}</h2>
+    <p class="big">{{ total_posts }}</p>
+  </article>
+  <article class="card stat-card">
+    <h2>{{ t("dashboard.replies") }}</h2>
+    <p class="big">{{ total_replies }}</p>
+  </article>
+  <article class="card stat-card">
+    <h2>{{ t("dashboard.with_links") }}</h2>
+    <p class="big">{{ with_links }}</p>
+  </article>
+  <article class="card stat-card">
+    <h2>{{ t("dashboard.with_media") }}</h2>
+    <p class="big">{{ with_media }}</p>
+  </article>
+</section>
+
+<section class="grid two-cols">
+  <article class="card">
+    <h2>{{ t("dashboard.coverage") }}</h2>
+    <p class="muted">
+      {% if min_date and max_date %}
+      {{ t("dashboard.coverage_range", start=min_date.strftime("%Y-%m-%d"), end=max_date.strftime("%Y-%m-%d")) }}
+      {% else %}
+      {{ t("dashboard.no_posts") }}
+      {% endif %}
+    </p>
+    {% if current_user.is_admin %}
+    <a class="btn-secondary" href="{{ url_for('archives.create_archive') }}">{{ t("dashboard.new_archive") }}</a>
+    {% endif %}
+  </article>
+
+  <article class="card">
+    <h2>{{ t("dashboard.recent_archives") }}</h2>
+    <ul class="simple-list">
+      {% for archive in archives %}
+      <li>
+        <a href="{{ url_for('archives.archive_detail', archive_id=archive.id) }}">{{ archive.name }}</a>
+        <span class="muted">({{ archive.status }})</span>
+      </li>
+      {% else %}
+      <li class="muted">{{ t("dashboard.none_archives") }}</li>
+      {% endfor %}
+    </ul>
+    {% if archives_page_data and archives_page_data.pages > 1 %}
+    <div class="pagination">
+      {% if archives_page_data.has_prev %}
+      <a href="{{ url_for('main.dashboard', archives_page=archives_page_data.prev_num) }}">&laquo; {{ t("search.previous") }}</a>
+      {% endif %}
+      <span>{{ t("search.page", page=archives_page_data.page, pages=archives_page_data.pages) }}</span>
+      {% if archives_page_data.has_next %}
+      <a href="{{ url_for('main.dashboard', archives_page=archives_page_data.next_num) }}">{{ t("search.next") }} &raquo;</a>
+      {% endif %}
+    </div>
+    {% endif %}
+  </article>
+</section>
+
+<section class="grid two-cols">
+  <article class="card">
+    <h2>{{ t("dashboard.top_hashtags") }}</h2>
+    <ul class="simple-list">
+      {% for tag, count in top_hashtags %}
+      <li>#{{ tag }} <strong>{{ count }}</strong></li>
+      {% else %}
+      <li class="muted">{{ t("dashboard.no_data") }}</li>
+      {% endfor %}
+    </ul>
+  </article>
+  <article class="card">
+    <h2>{{ t("dashboard.top_mentions") }}</h2>
+    <ul class="simple-list">
+      {% for handle, count in top_mentions %}
+      <li>@{{ handle }} <strong>{{ count }}</strong></li>
+      {% else %}
+      <li class="muted">{{ t("dashboard.no_data") }}</li>
+      {% endfor %}
+    </ul>
+  </article>
+</section>
+
+<section class="grid two-cols">
+  <article class="card">
+    <h2>{{ t("dashboard.operations", hours=metrics_hours) }}</h2>
+    <ul class="simple-list">
+      {% for row in ops_summary %}
+      <li>
+        <strong>{{ row.operation_type }}</strong>
+        <span class="muted">{{ t("dashboard.metric.total") }}={{ row.total }}</span>
+        <span class="muted">{{ t("dashboard.metric.success") }}={{ row.success }}</span>
+        <span class="muted">{{ t("dashboard.metric.failed") }}={{ row.failed }}</span>
+        <span class="muted">{{ t("dashboard.metric.average") }}={{ row.avg_duration_ms }}ms</span>
+      </li>
+      {% else %}
+      <li class="muted">{{ t("dashboard.no_operations") }}</li>
+      {% endfor %}
+    </ul>
+    <p class="muted">{{ t("dashboard.metrics_json") }}: <a href="{{ url_for('main.ops_metrics') }}">/ops/metrics</a></p>
+  </article>
+  <article class="card">
+    <h2>{{ t("dashboard.latest_operations") }}</h2>
+    <ul class="simple-list">
+      {% for metric in recent_ops %}
+      <li>
+        <strong>{{ metric.operation_type }}</strong>
+        <span class="muted">{{ t("dashboard.operation_status") }}={{ metric.status }}</span>
+        <span class="muted">{{ t("dashboard.operation_archive") }}={{ metric.archive_id or "-" }}</span>
+        <span class="muted">{{ t("dashboard.operation_duration") }}={{ metric.duration_ms or 0 }}ms</span>
+        <span class="muted">{{ metric.started_at.strftime("%Y-%m-%d %H:%M:%S") if metric.started_at else "-" }}</span>
+      </li>
+      {% else %}
+      <li class="muted">{{ t("dashboard.no_history") }}</li>
+      {% endfor %}
+    </ul>
+  </article>
+</section>
+{% endblock %}

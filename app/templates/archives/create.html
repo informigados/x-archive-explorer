@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}{{ t("archives.new") }} | {{ t("app.name") }}{% endblock %}
+{% block content %}
+<section class="card">
+  <h1>{{ t("archive.create.title") }}</h1>
+  <form method="post" class="form-grid">
+    {{ form.hidden_tag() }}
+    <div class="field">
+      <label for="{{ form.name.id }}">{{ t("archive.create.name") }}</label>
+      {{ form.name(placeholder=t("archive.create.placeholder.name")) }}
+      {% for error in form.name.errors %}
+      <small class="field-error">{{ error }}</small>
+      {% endfor %}
+    </div>
+
+    <div class="field">
+      <label for="{{ form.description.id }}">{{ t("archive.create.description") }}</label>
+      {{ form.description(rows="4", placeholder=t("archive.create.placeholder.description")) }}
+      {% for error in form.description.errors %}
+      <small class="field-error">{{ error }}</small>
+      {% endfor %}
+    </div>
+
+    <button type="submit" class="btn-primary" data-submit-loading="{{ t('ui.loading') }}">{{ t("archives.new") }}</button>
+  </form>
+</section>
+{% endblock %}

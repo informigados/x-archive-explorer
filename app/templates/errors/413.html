@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}{{ t("error.413.title") }}{% endblock %}
+{% block content %}
+<section class="card">
+  <h1>413</h1>
+  <p>{{ t("error.413.message") }}</p>
+  <a class="btn-secondary" href="{{ url_for('archives.list_archives') }}">{{ t("error.back") }}</a>
+</section>
+{% endblock %}

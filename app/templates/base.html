@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="{{ language_html_code }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ t("app.name") }}{% endblock %}</title>
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='img/favicon.svg') }}">
+  <link rel="shortcut icon" href="{{ url_for('main.favicon') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <a class="brand" href="{{ url_for('main.root') }}">
+        <img class="brand-logo" src="{{ url_for('static', filename='img/logo-xae.svg') }}" alt="XAE logo" width="30" height="30">
+        <span>{{ t("app.name") }}</span>
+      </a>
+      <button
+        type="button"
+        class="nav-toggle"
+        data-nav-toggle
+        aria-controls="topbar-actions"
+        aria-expanded="false"
+        aria-label="{{ t('nav.menu_open') }}"
+        data-label-open="{{ t('nav.menu_open') }}"
+        data-label-close="{{ t('nav.menu_close') }}"
+      >
+        <span class="nav-toggle-icon" aria-hidden="true">
+          <span class="nav-toggle-line"></span>
+          <span class="nav-toggle-line"></span>
+          <span class="nav-toggle-line"></span>
+        </span>
+        <span class="sr-only">{{ t("nav.menu") }}</span>
+      </button>
+      <div class="topbar-actions" id="topbar-actions" data-nav-menu>
+        <form method="post" action="{{ url_for('main.set_language') }}" class="lang-form">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="next" value="{{ request.full_path if request.query_string else request.path }}">
+          <label for="lang-select" class="lang-label">{{ t("ui.language") }}</label>
+          <select id="lang-select" name="lang" data-language-select>
+            {% for code, label in language_options.items() %}
+            <option value="{{ code }}" {% if code == current_language %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </form>
+        {% if current_user.is_authenticated %}
+        <nav class="main-nav">
+          <a href="{{ url_for('main.dashboard') }}">{{ t("nav.dashboard") }}</a>
+          <a href="{{ url_for('archives.list_archives') }}">{{ t("nav.archives") }}</a>
+          <a href="{{ url_for('search.search_view') }}">{{ t("nav.search") }}</a>
+          {% if current_user.is_admin %}
+          <a href="{{ url_for('auth.users_list') }}">{{ t("nav.users") }}</a>
+          {% endif %}
+          <a href="{{ url_for('auth.users_password', user_id=current_user.id) }}">{{ t("nav.account") }}</a>
+          <form method="post" action="{{ url_for('auth.logout') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn-link">{{ t("nav.logout") }}</button>
+          </form>
+        </nav>
+        {% endif %}
+      </div>
+    </div>
+  </header>
+  <button type="button" class="mobile-nav-backdrop" data-nav-backdrop tabindex="-1" aria-hidden="true"></button>
+
+  <main class="container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <section class="flash-wrap">
+          {% for category, message in messages %}
+            <div class="flash flash-{{ category }}">{{ message }}</div>
+          {% endfor %}
+        </section>
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

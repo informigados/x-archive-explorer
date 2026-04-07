@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}{{ t("users.create_title") }} | {{ t("app.name") }}{% endblock %}
+{% block content %}
+<section class="page-head">
+  <h1>{{ t("users.create_title") }}</h1>
+  <a class="btn-secondary" href="{{ url_for('auth.users_list') }}">{{ t("users.back") }}</a>
+</section>
+
+<section class="card">
+  <form method="post" class="form-grid">
+    {{ form.hidden_tag() }}
+
+    <div class="field">
+      <label for="{{ form.username.id }}">{{ t("users.username") }}</label>
+      {{ form.username(placeholder="operator") }}
+      {% for error in form.username.errors %}
+      <small class="field-error">{{ error }}</small>
+      {% endfor %}
+    </div>
+
+    <div class="field">
+      <label for="{{ form.email.id }}">{{ t("users.email") }}</label>
+      {{ form.email(placeholder="operator@example.com") }}
+      {% for error in form.email.errors %}
+      <small class="field-error">{{ error }}</small>
+      {% endfor %}
+    </div>
+
+    <div class="field">
+      <label for="{{ form.password.id }}">{{ t("users.password") }}</label>
+      {{ form.password(placeholder="********") }}
+      {% for error in form.password.errors %}
+      <small class="field-error">{{ error }}</small>
+      {% endfor %}
+    </div>
+
+    <div class="field">
+      <label for="{{ form.role.id }}">{{ t("users.role") }}</label>
+      {{ form.role() }}
+      {% for error in form.role.errors %}
+      <small class="field-error">{{ error }}</small>
+      {% endfor %}
+    </div>
+
+    <button type="submit" class="btn-primary" data-submit-loading="{{ t('ui.loading') }}">{{ t("users.create_submit") }}</button>
+  </form>
+</section>
+{% endblock %}

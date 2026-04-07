@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}{{ t("archives.title") }} | {{ t("app.name") }}{% endblock %}
+{% block content %}
+<section class="page-head">
+  <h1>{{ t("archives.title") }}</h1>
+  {% if current_user.is_admin %}
+  <a class="btn-primary" href="{{ url_for('archives.create_archive') }}">{{ t("archives.new") }}</a>
+  {% endif %}
+</section>
+
+<section class="card">
+  <div class="table-wrap">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>{{ t("archives.table.name") }}</th>
+        <th>{{ t("archives.table.status") }}</th>
+        <th>{{ t("archives.table.posts") }}</th>
+        <th>{{ t("archives.table.replies") }}</th>
+        <th>{{ t("archives.table.updated") }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for archive in archives %}
+      <tr>
+        <td>{{ archive.id }}</td>
+        <td><a href="{{ url_for('archives.archive_detail', archive_id=archive.id) }}">{{ archive.name }}</a></td>
+        <td>{{ archive.status }}</td>
+        <td>{{ archive.total_posts }}</td>
+        <td>{{ archive.total_replies }}</td>
+        <td>{{ archive.imported_at.strftime("%Y-%m-%d %H:%M") if archive.imported_at else "-" }}</td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="6" class="muted">{{ t("archives.none") }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</section>
+
+{% if page_data and page_data.pages > 1 %}
+<section class="pagination">
+  {% if page_data.has_prev %}
+  <a href="{{ url_for('archives.list_archives', page=page_data.prev_num) }}">&laquo; {{ t("search.previous") }}</a>
+  {% endif %}
+  <span>{{ t("search.page", page=page_data.page, pages=page_data.pages) }}</span>
+  {% if page_data.has_next %}
+  <a href="{{ url_for('archives.list_archives', page=page_data.next_num) }}">{{ t("search.next") }} &raquo;</a>
+  {% endif %}
+</section>
+{% endif %}
+{% endblock %}
