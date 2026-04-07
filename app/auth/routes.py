@@ -1,5 +1,3 @@
-from urllib.parse import urljoin, urlparse
-
 from flask import Blueprint, abort, current_app, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required, login_user, logout_user
 from sqlalchemy import or_
@@ -39,9 +37,6 @@ def login():
         if user and user.check_password(form.password.data):
             record_login_success(rate_limit_key)
             login_user(user, remember=False)
-            next_page = request.args.get("next")
-            if next_page and _is_safe_redirect_target(next_page):
-                return redirect(next_page)
             return redirect(url_for("main.dashboard"))
         record_login_failure(
             rate_limit_key,
@@ -260,13 +255,6 @@ def _is_last_admin(user: User) -> bool:
         return False
     admin_count = User.query.filter_by(role=User.ROLE_ADMIN).count()
     return admin_count <= 1
-
-
-def _is_safe_redirect_target(target: str) -> bool:
-    host_url = request.host_url
-    reference = urlparse(host_url)
-    test_url = urlparse(urljoin(host_url, target))
-    return test_url.scheme in {"http", "https"} and reference.netloc == test_url.netloc
 
 
 def _build_login_rate_limit_key() -> str:

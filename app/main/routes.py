@@ -1,6 +1,5 @@
 import time
 from threading import Lock
-from urllib.parse import urljoin, urlparse
 
 from flask import Blueprint, current_app, jsonify, redirect, render_template, request, send_from_directory, url_for
 from flask_login import current_user, login_required
@@ -123,17 +122,9 @@ def ops_metrics():
 def set_language():
     lang = request.form.get("lang")
     set_current_language(lang or "")
-    next_url = request.form.get("next") or request.referrer or url_for("main.root")
-    if _is_safe_redirect_target(next_url):
-        return redirect(next_url)
+    if current_user.is_authenticated:
+        return redirect(url_for("main.dashboard"))
     return redirect(url_for("main.root"))
-
-
-def _is_safe_redirect_target(target: str) -> bool:
-    host_url = request.host_url
-    reference = urlparse(host_url)
-    test_url = urlparse(urljoin(host_url, target))
-    return test_url.scheme in {"http", "https"} and reference.netloc == test_url.netloc
 
 
 def _as_int(value, default: int, minimum: int = 1) -> int:

@@ -36,7 +36,6 @@
       <div class="topbar-actions" id="topbar-actions" data-nav-menu>
         <form method="post" action="{{ url_for('main.set_language') }}" class="lang-form">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <input type="hidden" name="next" value="{{ request.full_path if request.query_string else request.path }}">
           <label for="lang-select" class="lang-label">{{ t("ui.language") }}</label>
           <select id="lang-select" name="lang" data-language-select>
             {% for code, label in language_options.items() %}

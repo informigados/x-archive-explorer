@@ -955,11 +955,11 @@ def test_hsts_respects_trusted_proxy_flag(client, app):
     assert secure.headers.get("Strict-Transport-Security") is not None
 
 
-def test_force_https_redirects_non_localhost_requests(client, app):
+def test_force_https_rejects_non_localhost_insecure_requests(client, app):
     app.config["FORCE_HTTPS"] = True
     response = client.get("/auth/login", base_url="http://example.com", follow_redirects=False)
-    assert response.status_code == 301
-    assert response.headers["Location"].startswith("https://example.com/auth/login")
+    assert response.status_code == 400
+    assert b"HTTPS required" in response.data
 
 
 def test_user_management_protects_default_user(client, app):

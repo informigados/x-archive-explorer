@@ -1,4 +1,4 @@
-# 🚀 X Archive Explorer
+# X Archive Explorer 🚀
 
 [![CI](https://github.com/informigados/x-archive-explorer/actions/workflows/ci.yml/badge.svg)](https://github.com/informigados/x-archive-explorer/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/Python-3.12%2B-3776AB?logo=python&logoColor=white)
@@ -375,3 +375,22 @@ Before pushing:
 
 > A lightweight local-first explorer for archived X posts and replies.  
 > Import, search, filter, inspect, sync, and export with speed and clarity.
+
+## 📝 Changelog
+
+### 2026-04-07 (1.0.0)
+
+- Initial release.
+
+## 🤝 Contributing
+
+Contributions are welcome. Please read [`CONTRIBUTING.md`](CONTRIBUTING.md) before opening a pull request.
+
+## 👥 Authors
+
+- [INformigados](https://github.com/informigados)
+- [Alex Brito](https://github.com/alexbritodev)
+
+## 📄 License
+
+This project is licensed under the MIT License. See [`LICENSE`](LICENSE) for details.

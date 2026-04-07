@@ -1,8 +1,7 @@
-import os
+import re
 from urllib.parse import urlencode
-from pathlib import Path
 
-from flask import Blueprint, Response, abort, current_app, render_template, request, send_file, url_for
+from flask import Blueprint, Response, abort, current_app, render_template, request, send_from_directory, url_for
 from flask_login import login_required
 
 from app.extensions import db
@@ -16,6 +15,7 @@ from app.services.search import iterate_all_posts, search_all_posts, search_post
 
 
 search_bp = Blueprint("search", __name__)
+MEDIA_PATH_PATTERN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._/-]{0,511}$")
 
 
 @search_bp.route("/search")
@@ -68,13 +68,12 @@ def post_detail(post_id: int):
 @search_bp.route("/media/<path:media_path>")
 @login_required
 def media_file(media_path: str):
-    upload_root = Path(current_app.config["UPLOAD_FOLDER"]).resolve()
-    target = (upload_root / media_path).resolve()
-    if not _is_path_within_root(upload_root, target):
+    normalized = (media_path or "").replace("\\", "/").strip()
+    if not MEDIA_PATH_PATTERN.fullmatch(normalized):
         abort(404)
-    if not target.is_file():
+    if normalized.startswith(("/", ".")) or "/../" in f"/{normalized}/" or normalized.endswith("/.."):
         abort(404)
-    return send_file(target)
+    return send_from_directory(current_app.config["UPLOAD_FOLDER"], normalized, conditional=True)
 
 
 @search_bp.route("/export/csv")
@@ -166,16 +165,6 @@ def _media_is_video(media, src: str | None = None) -> bool:
         return False
     lowered = src.lower()
     return lowered.endswith(".mp4") or lowered.endswith(".mov") or lowered.endswith(".webm") or lowered.endswith(".m4v")
-
-
-def _is_path_within_root(root: Path, target: Path) -> bool:
-    root_str = os.path.normcase(str(root.resolve()))
-    target_str = os.path.normcase(str(target.resolve()))
-    try:
-        common = os.path.commonpath([root_str, target_str])
-    except ValueError:
-        return False
-    return common == root_str
 
 
 def _load_archive_filter_options(selected_archive_id: int | None) -> list[Archive]:

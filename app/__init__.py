@@ -7,7 +7,7 @@ from pathlib import Path
 from uuid import uuid4
 
 import click
-from flask import Flask, g, redirect, render_template, request
+from flask import Flask, g, render_template, request
 from flask_login import current_user
 from sqlalchemy import inspect, or_
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -359,9 +359,6 @@ def register_https_enforcement(app: Flask) -> None:
         if host in {"localhost", "127.0.0.1", "::1"}:
             return None
 
-        if request.method in {"GET", "HEAD"}:
-            secure_url = request.url.replace("http://", "https://", 1)
-            return redirect(secure_url, code=301)
         return "HTTPS required", 400
 
 
