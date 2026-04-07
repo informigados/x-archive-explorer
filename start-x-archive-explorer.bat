@@ -36,8 +36,11 @@ if "%XAE_ADMIN_PASSWORD%"=="" set "XAE_ADMIN_PASSWORD=change-this-password"
 if "%XAE_AUTO_CREATE_SCHEMA%"=="" set "XAE_AUTO_CREATE_SCHEMA=false"
 if "%XAE_ENV%"=="" set "XAE_ENV=development"
 if "%XAE_HOST%"=="" set "XAE_HOST=127.0.0.1"
+set "XAE_BROWSER_HOST=%XAE_HOST%"
+if "%XAE_BROWSER_HOST%"=="0.0.0.0" set "XAE_BROWSER_HOST=127.0.0.1"
+if "%XAE_BROWSER_HOST%"=="::" set "XAE_BROWSER_HOST=127.0.0.1"
 
-for /f "usebackq delims=" %%P in (`powershell -NoProfile -Command "$start=5000;$end=5100;$port=$null;for($p=$start;$p -le $end;$p++){try{$l=[System.Net.Sockets.TcpListener]::new([System.Net.IPAddress]::Loopback,$p);$l.Start();$l.Stop();$port=$p;break}catch{}};if($port){Write-Output $port}"`) do set "XAE_PORT=%%P"
+call :find_free_port
 if "%XAE_PORT%"=="" (
   echo No available port was found between 5000 and 5100.
   goto :fail
@@ -66,12 +69,31 @@ echo   flask --app run.py reset-user-password --identity %XAE_ADMIN_EMAIL% --pas
 echo.
 
 echo [6/7] Opening browser...
-start "" powershell -NoProfile -Command "Start-Sleep -Seconds 2; Start-Process 'http://127.0.0.1:%XAE_PORT%/'"
+start "" powershell -NoProfile -Command "Start-Sleep -Seconds 2; Start-Process 'http://%XAE_BROWSER_HOST%:%XAE_PORT%/'"
 
 echo [7/7] Starting X Archive Explorer on port %XAE_PORT% with Waitress...
-echo URL: http://127.0.0.1:%XAE_PORT%/
+echo URL: http://%XAE_BROWSER_HOST%:%XAE_PORT%/
 "%PY%" -m waitress --listen=%XAE_HOST%:%XAE_PORT% run:app
 goto :eof
+
+:find_free_port
+set "XAE_PORT="
+for /f "usebackq delims=" %%P in (`
+  powershell -NoProfile -Command ^
+    "$start=5000; ^
+     $end=5100; ^
+     $port=$null; ^
+     for($p=$start;$p -le $end;$p++){ ^
+       try { ^
+         $l=[System.Net.Sockets.TcpListener]::new([System.Net.IPAddress]::Loopback,$p); ^
+         $l.Start(); ^
+         $l.Stop(); ^
+         $port=$p; ^
+         break ^
+       } catch {} ^
+     }; ^
+     if($port){Write-Output $port}"`) do set "XAE_PORT=%%P"
+exit /b 0
 
 :fail
 echo Startup failed.
