@@ -1,6 +1,6 @@
 # 🚀 X Archive Explorer
 
-![CI Ready](https://img.shields.io/badge/CI-GitHub%20Actions-2088FF?logo=githubactions&logoColor=white)
+[![CI](https://github.com/informigados/x-archive-explorer/actions/workflows/ci.yml/badge.svg)](https://github.com/informigados/x-archive-explorer/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/Python-3.12%2B-3776AB?logo=python&logoColor=white)
 ![Flask](https://img.shields.io/badge/Flask-3.1-black?logo=flask&logoColor=white)
 ![Tests](https://img.shields.io/badge/Tests-Pytest-0A9EDC?logo=pytest&logoColor=white)
