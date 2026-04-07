@@ -85,8 +85,9 @@ Default local bootstrap access:
 
 - Username: `admin`
 - Email: `admin@localhost`
-- Password: generated automatically in development when `XAE_ADMIN_PASSWORD` is not set
-- Generated bootstrap password is saved to: `instance/bootstrap-admin-password.txt`
+- Password: **no hardcoded default** (`change-this-password` is no longer used)
+- In development, when `XAE_ADMIN_PASSWORD` is not set, the launcher generates a strong bootstrap password automatically
+- Generated bootstrap password is saved to: `instance/bootstrap-admin-password.txt` (restricted local permissions)
 - Sign in with either the username or the email.
 
 Security recommendation:
