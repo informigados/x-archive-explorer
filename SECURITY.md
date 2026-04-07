@@ -8,7 +8,13 @@ Security fixes are provided for the latest version on the default branch.
 
 Please do not open a public issue for security vulnerabilities.
 
-Report privately to the repository owner with:
+Report privately using one of these channels:
+
+- GitHub private advisory form:
+  `https://github.com/informigados/x-archive-explorer/security/advisories/new`
+- GitHub UI path: **Security** tab → **Report a vulnerability**
+
+Include:
 
 - A clear description of the issue
 - Steps to reproduce

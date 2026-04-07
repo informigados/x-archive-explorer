@@ -11,7 +11,20 @@ Thanks for contributing to **X Archive Explorer**.
 
 ## 🛠️ Local Setup
 
-1. Create a virtual environment.
+1. Create and activate a virtual environment (Python 3.12+):
+
+```bash
+python --version
+python -m venv .venv
+source .venv/bin/activate
+```
+
+On Windows (PowerShell), activate with:
+
+```powershell
+.venv\Scripts\Activate.ps1
+```
+
 2. Install dependencies:
 
 ```bash
