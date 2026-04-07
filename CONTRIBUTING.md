@@ -1,15 +1,15 @@
-# Contributing
+# Contributing 🤝
 
 Thanks for contributing to **X Archive Explorer**.
 
-## Ground Rules
+## 📌 Ground Rules
 
 - Keep changes focused and production-ready.
 - Preserve existing behavior unless the change explicitly modifies it.
 - Add tests for new behavior and bug fixes whenever possible.
 - Keep documentation aligned with code changes.
 
-## Local Setup
+## 🛠️ Local Setup
 
 1. Create a virtual environment.
 2. Install dependencies:
@@ -31,7 +31,7 @@ flask --app run.py db upgrade
 python -m pytest -q
 ```
 
-## Pull Request Checklist
+## ✅ Pull Request Checklist
 
 - Clear title and scope.
 - Reproducible steps for bug fixes.
@@ -39,7 +39,7 @@ python -m pytest -q
 - No secrets or local files committed.
 - README updated when behavior changes.
 
-## Code Style
+## 🧩 Code Style
 
 - Follow existing project style and naming.
 - Prefer small, readable functions.

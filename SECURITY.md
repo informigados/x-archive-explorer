@@ -1,10 +1,10 @@
-# Security Policy
+# Security Policy 🔐
 
-## Supported Versions
+## 🧭 Supported Versions
 
 Security fixes are provided for the latest version on the default branch.
 
-## Reporting a Vulnerability
+## 🚨 Reporting a Vulnerability
 
 Please do not open a public issue for security vulnerabilities.
 
@@ -15,7 +15,7 @@ Report privately to the repository owner with:
 - Impact assessment
 - Suggested mitigation (if available)
 
-## Response Process
+## 🛡️ Response Process
 
 - Initial triage target: within 5 business days
 - Status updates: shared during investigation
