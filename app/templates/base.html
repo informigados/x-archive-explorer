@@ -10,6 +10,8 @@
   <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
 </head>
 <body>
+  {% set endpoint = request.endpoint or '' %}
+  {% set view_user_id = request.view_args.get('user_id') if request.view_args else None %}
   <header class="topbar">
     <div class="container topbar-inner">
       <a class="brand" href="{{ url_for('main.root') }}">
@@ -45,13 +47,19 @@
         </form>
         {% if current_user.is_authenticated %}
         <nav class="main-nav">
-          <a href="{{ url_for('main.dashboard') }}">{{ t("nav.dashboard") }}</a>
-          <a href="{{ url_for('archives.list_archives') }}">{{ t("nav.archives") }}</a>
-          <a href="{{ url_for('search.search_view') }}">{{ t("nav.search") }}</a>
+          <a class="nav-link{% if endpoint.startswith('main.') %} is-active{% endif %}" href="{{ url_for('main.dashboard') }}">{{ t("nav.dashboard") }}</a>
+          <a class="nav-link{% if endpoint.startswith('archives.') %} is-active{% endif %}" href="{{ url_for('archives.list_archives') }}">{{ t("nav.archives") }}</a>
+          <a class="nav-link{% if endpoint.startswith('search.') %} is-active{% endif %}" href="{{ url_for('search.search_view') }}">{{ t("nav.search") }}</a>
           {% if current_user.is_admin %}
-          <a href="{{ url_for('auth.users_list') }}">{{ t("nav.users") }}</a>
+          <a
+            class="nav-link{% if endpoint.startswith('auth.users_') and not (endpoint == 'auth.users_password' and view_user_id == current_user.id) %} is-active{% endif %}"
+            href="{{ url_for('auth.users_list') }}"
+          >{{ t("nav.users") }}</a>
           {% endif %}
-          <a href="{{ url_for('auth.users_password', user_id=current_user.id) }}">{{ t("nav.account") }}</a>
+          <a
+            class="nav-link{% if endpoint == 'auth.users_password' and view_user_id == current_user.id %} is-active{% endif %}"
+            href="{{ url_for('auth.users_password', user_id=current_user.id) }}"
+          >{{ t("nav.account") }}</a>
           <form method="post" action="{{ url_for('auth.logout') }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn-link">{{ t("nav.logout") }}</button>
@@ -61,7 +69,7 @@
       </div>
     </div>
   </header>
-  <button type="button" class="mobile-nav-backdrop" data-nav-backdrop tabindex="-1" aria-hidden="true"></button>
+  <div class="mobile-nav-backdrop" data-nav-backdrop></div>
 
   <main class="container">
     {% with messages = get_flashed_messages(with_categories=true) %}

@@ -54,7 +54,7 @@ a:hover {
   background: var(--surface);
   border-bottom: 1px solid var(--border);
   backdrop-filter: blur(8px);
-  z-index: 20;
+  z-index: 60;
 }
 
 .topbar-inner {
@@ -89,6 +89,24 @@ a:hover {
   display: flex;
   align-items: center;
   gap: 1rem;
+}
+
+.main-nav .nav-link {
+  color: var(--primary);
+  border-radius: 8px;
+  padding: 0.2rem 0.4rem;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.main-nav .nav-link:hover {
+  text-decoration: none;
+  background: #eef6f5;
+}
+
+.main-nav .nav-link.is-active {
+  background: #dff3f0;
+  color: var(--primary-dark);
+  font-weight: 700;
 }
 
 .topbar-actions {
@@ -535,7 +553,7 @@ textarea {
     pointer-events: none;
     transform: translateY(-8px);
     transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s ease;
-    z-index: 40;
+    z-index: 70;
   }
 
   .topbar-actions.is-open {
@@ -572,7 +590,7 @@ textarea {
     display: block;
     position: fixed;
     inset: 0;
-    z-index: 25;
+    z-index: 55;
     border: 0;
     background: rgba(2, 6, 23, 0.24);
     opacity: 0;
