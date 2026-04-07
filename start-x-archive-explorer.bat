@@ -41,6 +41,11 @@ if "%XAE_HOST%"=="" set "XAE_HOST=127.0.0.1"
 set "XAE_BROWSER_HOST=%XAE_HOST%"
 if "%XAE_BROWSER_HOST%"=="0.0.0.0" set "XAE_BROWSER_HOST=127.0.0.1"
 if "%XAE_BROWSER_HOST%"=="::" set "XAE_BROWSER_HOST=127.0.0.1"
+call :resolve_current_user_sid
+if "%CURRENT_USER_SID%"=="" (
+  echo Failed to resolve current user SID.
+  goto :fail
+)
 
 if "%XAE_SECRET_KEY%"=="" (
   if /I not "%XAE_ENV%"=="development" (
@@ -73,7 +78,7 @@ if "%XAE_ADMIN_PASSWORD%"=="" (
     echo Password=%XAE_ADMIN_PASSWORD%
     echo GeneratedAt=%DATE% %TIME%
   )
-  icacls "%BOOTSTRAP_FILE%" /inheritance:r /grant:r "%USERNAME%:(R,W)" "*S-1-5-32-544:(R,W)" >nul
+  icacls "%BOOTSTRAP_FILE%" /inheritance:r /grant:r "*%CURRENT_USER_SID%:(R,W)" >nul
   if errorlevel 1 (
     echo Failed to apply restrictive permissions to %BOOTSTRAP_FILE%.
     del /q "%BOOTSTRAP_FILE%" >nul 2>&1
@@ -119,7 +124,7 @@ echo.
 
 echo [6/7] Opening browser...
 set "APP_URL=http://%XAE_BROWSER_HOST%:%XAE_PORT%/"
-start "" powershell -NoProfile -Command "Start-Sleep -Seconds 2; Start-Process '%APP_URL%'"
+start "" powershell -NoProfile -Command "param([string]$u) Start-Sleep -Seconds 2; Start-Process $u" -args "%APP_URL%"
 
 echo [7/7] Starting X Archive Explorer on port %XAE_PORT% with Waitress...
 echo URL: %APP_URL%
@@ -145,18 +150,21 @@ for /f "usebackq delims=" %%P in (`
      if($port){Write-Output $port}"`) do set "XAE_PORT=%%P"
 exit /b 0
 
+:resolve_current_user_sid
+set "CURRENT_USER_SID="
+for /f "usebackq tokens=2 delims=," %%S in (`whoami /user /fo csv /nh`) do set "CURRENT_USER_SID=%%~S"
+exit /b 0
+
 :validate_runtime_values
-set "XAE_HOST_VALID="
-for /f "usebackq delims=" %%V in (`powershell -NoProfile -Command "$h=$env:XAE_HOST; $ok=$false; $ip=[System.Net.IPAddress]::None; if([System.Net.IPAddress]::TryParse($h,[ref]$ip)){ $ok=$true } elseif($h -eq 'localhost'){ $ok=$true } elseif($h -match '^[A-Za-z0-9]([A-Za-z0-9.-]{0,251}[A-Za-z0-9])?$'){ $ok=$true }; if($ok){'1'}else{'0'}"`) do set "XAE_HOST_VALID=%%V"
-if not "%XAE_HOST_VALID%"=="1" (
+call :validate_hostname_env XAE_HOST
+if errorlevel 1 (
   echo Invalid XAE_HOST value: %XAE_HOST%
   echo Please set XAE_HOST to a valid IP address or hostname.
   goto :fail
 )
 
-set "XAE_BROWSER_HOST_VALID="
-for /f "usebackq delims=" %%V in (`powershell -NoProfile -Command "$h=$env:XAE_BROWSER_HOST; $ok=$false; $ip=[System.Net.IPAddress]::None; if([System.Net.IPAddress]::TryParse($h,[ref]$ip)){ $ok=$true } elseif($h -eq 'localhost'){ $ok=$true } elseif($h -match '^[A-Za-z0-9]([A-Za-z0-9.-]{0,251}[A-Za-z0-9])?$'){ $ok=$true }; if($ok){'1'}else{'0'}"`) do set "XAE_BROWSER_HOST_VALID=%%V"
-if not "%XAE_BROWSER_HOST_VALID%"=="1" (
+call :validate_hostname_env XAE_BROWSER_HOST
+if errorlevel 1 (
   echo Invalid XAE_BROWSER_HOST value: %XAE_BROWSER_HOST%
   echo Please set XAE_BROWSER_HOST to a valid IP address or hostname.
   goto :fail
@@ -170,6 +178,14 @@ if not "%XAE_PORT_VALID%"=="1" (
   goto :fail
 )
 exit /b 0
+
+:validate_hostname_env
+set "VALIDATE_ENV_NAME=%~1"
+call set "VALIDATE_ENV_VALUE=%%%VALIDATE_ENV_NAME%%%"
+set "HOST_VALID=0"
+for /f "usebackq delims=" %%V in (`powershell -NoProfile -Command "$h=[string]$args[0]; $ok=$false; $ip=[System.Net.IPAddress]::None; if([System.Net.IPAddress]::TryParse($h,[ref]$ip)){ $ok=$true } elseif($h -eq 'localhost'){ $ok=$true } elseif($h -match '^[A-Za-z0-9]([A-Za-z0-9.-]{0,251}[A-Za-z0-9])?$'){ $ok=$true }; if($ok){'1'}else{'0'}" -- "%VALIDATE_ENV_VALUE%"`) do set "HOST_VALID=%%V"
+if "%HOST_VALID%"=="1" exit /b 0
+exit /b 1
 
 :fail
 echo Startup failed.
