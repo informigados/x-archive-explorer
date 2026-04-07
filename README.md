@@ -81,13 +81,13 @@ What it does automatically:
 - Opens browser automatically
 - Starts the app on the selected port using `waitress` (production-grade WSGI server)
 
-Default local credentials (if not overridden by environment variables):
+Default local bootstrap access:
 
 - Username: `admin`
 - Email: `admin@localhost`
-- Password: `change-this-password`
-- Sign in with either the default username or the default email.
-- These defaults apply to the **initial bootstrap** (first user creation).
+- Password: generated automatically in development when `XAE_ADMIN_PASSWORD` is not set
+- Generated bootstrap password is saved to: `instance/bootstrap-admin-password.txt`
+- Sign in with either the username or the email.
 
 Security recommendation:
 
@@ -97,7 +97,7 @@ Security recommendation:
 If the default password no longer works on an existing database, reset it with:
 
 ```bash
-flask --app run.py reset-user-password --identity admin@localhost --password change-this-password
+flask --app run.py reset-user-password --identity admin@localhost --password <new-password>
 ```
 
 If you upgraded code and the app reports outdated schema, run:
@@ -127,7 +127,7 @@ flask --app run.py db upgrade
 set XAE_SECRET_KEY=your-strong-key
 set XAE_ADMIN_USERNAME=admin
 set XAE_ADMIN_EMAIL=admin@localhost
-set XAE_ADMIN_PASSWORD=change-this-password
+set XAE_ADMIN_PASSWORD=your-strong-password
 set XAE_AUTO_CREATE_SCHEMA=false
 ```
 
@@ -338,7 +338,7 @@ Before pushing:
 - `XAE_DASHBOARD_CACHE_TTL_SECONDS=30`
 - `XAE_ADMIN_USERNAME=admin`
 - `XAE_ADMIN_EMAIL=admin@localhost`
-- `XAE_ADMIN_PASSWORD=change-this-password`
+- `XAE_ADMIN_PASSWORD=<set-strong-password>`
 - `XAE_X_API_ENABLED=false`
 - `XAE_X_API_BASE_URL=https://api.x.com/2`
 - `XAE_X_API_BEARER_TOKEN=...`

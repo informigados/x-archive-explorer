@@ -2,6 +2,7 @@
 setlocal EnableExtensions EnableDelayedExpansion
 
 cd /d "%~dp0"
+if not exist "instance" mkdir "instance"
 
 echo =============================================================
 echo                  X ARCHIVE EXPLORER
@@ -29,16 +30,49 @@ echo [2/7] Installing dependencies...
 if errorlevel 1 goto :fail
 
 echo [3/7] Resolving runtime configuration...
-if "%XAE_SECRET_KEY%"=="" set "XAE_SECRET_KEY=dev-change-me"
+if "%XAE_ENV%"=="" set "XAE_ENV=development"
+set "XAE_SECRET_KEY_GENERATED="
+set "XAE_ADMIN_PASSWORD_GENERATED="
 if "%XAE_ADMIN_USERNAME%"=="" set "XAE_ADMIN_USERNAME=admin"
 if "%XAE_ADMIN_EMAIL%"=="" set "XAE_ADMIN_EMAIL=admin@localhost"
-if "%XAE_ADMIN_PASSWORD%"=="" set "XAE_ADMIN_PASSWORD=change-this-password"
 if "%XAE_AUTO_CREATE_SCHEMA%"=="" set "XAE_AUTO_CREATE_SCHEMA=false"
-if "%XAE_ENV%"=="" set "XAE_ENV=development"
 if "%XAE_HOST%"=="" set "XAE_HOST=127.0.0.1"
 set "XAE_BROWSER_HOST=%XAE_HOST%"
 if "%XAE_BROWSER_HOST%"=="0.0.0.0" set "XAE_BROWSER_HOST=127.0.0.1"
 if "%XAE_BROWSER_HOST%"=="::" set "XAE_BROWSER_HOST=127.0.0.1"
+
+if "%XAE_SECRET_KEY%"=="" (
+  if /I not "%XAE_ENV%"=="development" (
+    echo XAE_SECRET_KEY is required when XAE_ENV is not development.
+    goto :fail
+  )
+  for /f "usebackq delims=" %%A in (`powershell -NoProfile -Command "$chars='abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789'; -join ((1..64) ^| ForEach-Object { $chars[(Get-Random -Maximum $chars.Length)] })"`) do set "XAE_SECRET_KEY=%%A"
+  if "%XAE_SECRET_KEY%"=="" (
+    echo Failed to generate a secure secret key.
+    goto :fail
+  )
+  set "XAE_SECRET_KEY_GENERATED=1"
+)
+
+if "%XAE_ADMIN_PASSWORD%"=="" (
+  if /I not "%XAE_ENV%"=="development" (
+    echo XAE_ADMIN_PASSWORD is required when XAE_ENV is not development.
+    goto :fail
+  )
+  for /f "usebackq delims=" %%A in (`powershell -NoProfile -Command "$chars='abcdefghijkmnopqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789'; -join ((1..24) ^| ForEach-Object { $chars[(Get-Random -Maximum $chars.Length)] })"`) do set "XAE_ADMIN_PASSWORD=%%A"
+  if "%XAE_ADMIN_PASSWORD%"=="" (
+    echo Failed to generate a random admin password.
+    goto :fail
+  )
+  set "XAE_ADMIN_PASSWORD_GENERATED=1"
+  >"instance\bootstrap-admin-password.txt" (
+    echo X Archive Explorer Bootstrap Credentials
+    echo Username=%XAE_ADMIN_USERNAME%
+    echo Email=%XAE_ADMIN_EMAIL%
+    echo Password=%XAE_ADMIN_PASSWORD%
+    echo GeneratedAt=%DATE% %TIME%
+  )
+)
 
 call :find_free_port
 if "%XAE_PORT%"=="" (
@@ -63,9 +97,16 @@ echo.
 echo Default local access:
 echo   Username: %XAE_ADMIN_USERNAME%
 echo   Email:    %XAE_ADMIN_EMAIL%
-echo   Password: %XAE_ADMIN_PASSWORD%
+echo   Password: ^<hidden^>
+if defined XAE_SECRET_KEY_GENERATED (
+  echo   Secret key was generated automatically for this development run.
+)
+if defined XAE_ADMIN_PASSWORD_GENERATED (
+  echo   Admin password was generated automatically and saved to:
+  echo   instance\bootstrap-admin-password.txt
+)
 echo If login fails on an existing database, run:
-echo   flask --app run.py reset-user-password --identity %XAE_ADMIN_EMAIL% --password %XAE_ADMIN_PASSWORD%
+echo   flask --app run.py reset-user-password --identity %XAE_ADMIN_EMAIL% --password ^<new-password^>
 echo.
 
 echo [6/7] Opening browser...
