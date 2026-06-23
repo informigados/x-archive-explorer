@@ -55,7 +55,7 @@ def _create_archive(client, name="Arquivo Teste"):
     )
 
 
-def _import_json(client, archive_id: int, payload: list[dict], mode: str = "merge"):
+def _import_json(client, archive_id: int, payload, mode: str = "merge"):
     file_bytes = io.BytesIO(json.dumps(payload).encode("utf-8"))
     return client.post(
         f"/archives/{archive_id}/import",
@@ -231,6 +231,53 @@ def test_import_and_search_flow(client, app):
     export_response = client.get("/export/json?q=hello", follow_redirects=True)
     assert export_response.status_code == 200
     assert export_response.mimetype == "application/json"
+
+
+def test_import_tweetclaw_json_export(client, app):
+    login_response = _login(client)
+    assert login_response.status_code == 200
+
+    create_response = _create_archive(client, name="TweetClaw Export")
+    assert create_response.status_code == 200
+
+    payload = {
+        "items": [
+            {
+                "id": "1900000000000000000",
+                "text": "TweetClaw source post #Launch @builder https://example.com/item",
+                "created_at": "2026-06-23T20:00:00Z",
+                "language": "en",
+                "url": "https://x.com/example/status/1900000000000000000",
+                "author": {
+                    "username": "example_creator",
+                    "name": "Example Creator",
+                },
+                "media": [
+                    {
+                        "type": "photo",
+                        "url": "https://example.com/media.jpg",
+                    }
+                ],
+            }
+        ]
+    }
+    import_response = _import_json(client, archive_id=1, payload=payload)
+    assert import_response.status_code == 200
+    assert "Importação concluída".encode("utf-8") in import_response.data
+
+    with app.app_context():
+        post = Post.query.filter_by(external_post_id="1900000000000000000").first()
+        assert post is not None
+        assert post.author_handle == "example_creator"
+        assert post.author_display_name == "Example Creator"
+        assert post.language == "en"
+        assert post.has_links is True
+        assert post.has_media is True
+        assert post.text_raw == "TweetClaw source post #Launch @builder https://example.com/item"
+        assert len(post.urls) == 1
+        assert post.urls[0].expanded_url == "https://x.com/example/status/1900000000000000000"
+        assert len(post.media) == 1
+        assert post.media[0].media_url == "https://example.com/media.jpg"
 
 
 def test_import_without_raw_json_storage(client, app):
