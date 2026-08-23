@@ -133,11 +133,17 @@ def _extract_tweets(doc: Any, name: str) -> list[dict[str, Any]]:
             tweets.append(item)
 
     if not tweets and isinstance(doc, dict):
-        nested = doc.get("tweets")
-        if isinstance(nested, list):
+        for key in ("tweets", "items", "results", "data"):
+            nested = doc.get(key)
+            if not isinstance(nested, list):
+                continue
             for item in nested:
                 if isinstance(item, dict):
-                    tweets.append(item.get("tweet", item))
+                    candidate = item.get("tweet", item)
+                    if isinstance(candidate, dict):
+                        tweets.append(candidate)
+            if tweets:
+                break
 
     if not tweets:
         lowered = name.lower()
@@ -157,7 +163,10 @@ def _normalize_tweet(tweet: dict[str, Any], default_author: str | None) -> dict[
     text_raw = tweet.get("full_text") or tweet.get("text") or ""
     text_normalized = re.sub(r"\s+", " ", unescape(text_raw)).strip()
 
-    entities = tweet.get("entities") or {}
+    entities = _as_dict(tweet.get("entities"))
+    user = _as_dict(tweet.get("user"))
+    author_doc = _as_dict(tweet.get("author"))
+
     hashtags = [_normalize_tag(h.get("text")) for h in _as_list(entities.get("hashtags"))]
     hashtags = sorted({tag for tag in hashtags if tag})
 
@@ -181,19 +190,30 @@ def _normalize_tweet(tweet: dict[str, Any], default_author: str | None) -> dict[
             }
         )
 
-    media_entities = _as_list((tweet.get("extended_entities") or {}).get("media")) or _as_list(
-        entities.get("media")
-    )
+    direct_url = tweet.get("url") or tweet.get("tweet_url")
+    if isinstance(direct_url, str) and direct_url and all(item["expanded_url"] != direct_url for item in urls):
+        urls.append(
+            {
+                "url": direct_url,
+                "expanded_url": direct_url,
+                "domain": urlparse(direct_url).netloc.lower() or None,
+            }
+        )
+
+    extended_entities = _as_dict(tweet.get("extended_entities"))
+    media_entities = _as_list(extended_entities.get("media")) or _as_list(entities.get("media"))
+    media_entities = [*media_entities, *_as_list(tweet.get("media"))]
     media: list[dict[str, str | None]] = []
     for entry in media_entities:
         if not isinstance(entry, dict):
             continue
+        media_url = entry.get("media_url_https") or entry.get("media_url") or entry.get("url")
         media.append(
             {
                 "media_type": entry.get("type"),
-                "media_url": entry.get("media_url_https") or entry.get("media_url"),
+                "media_url": media_url,
                 "local_path": None,
-                "preview_path": entry.get("media_url_https") or entry.get("media_url"),
+                "preview_path": media_url,
             }
         )
 
@@ -206,14 +226,17 @@ def _normalize_tweet(tweet: dict[str, Any], default_author: str | None) -> dict[
 
     author = (
         _normalize_handle(tweet.get("user_handle"))
-        or _normalize_handle((tweet.get("user") or {}).get("screen_name"))
+        or _normalize_handle(user.get("screen_name"))
+        or _normalize_handle(author_doc.get("handle"))
+        or _normalize_handle(author_doc.get("username"))
+        or _normalize_handle(author_doc.get("screen_name"))
         or default_author
     )
 
     return {
         "external_post_id": external_id,
         "author_handle": author,
-        "author_display_name": (tweet.get("user") or {}).get("name"),
+        "author_display_name": user.get("name") or author_doc.get("name") or author_doc.get("display_name"),
         "text_raw": text_raw,
         "text_normalized": text_normalized,
         "created_at": created_at,
@@ -224,7 +247,7 @@ def _normalize_tweet(tweet: dict[str, Any], default_author: str | None) -> dict[
         or None,
         "has_media": bool(media),
         "has_links": bool(urls),
-        "language": tweet.get("lang"),
+        "language": tweet.get("lang") or tweet.get("language"),
         "source_app": source_app,
         "raw_json": json.dumps(tweet, ensure_ascii=False) if _should_store_raw_json() else None,
         "hashtags": hashtags,
@@ -267,6 +290,12 @@ def _as_list(value: Any) -> list[Any]:
     if isinstance(value, list):
         return value
     return []
+
+
+def _as_dict(value: Any) -> dict[str, Any]:
+    if isinstance(value, dict):
+        return value
+    return {}
 
 
 def _get_archive_member_limits() -> tuple[int, int]:

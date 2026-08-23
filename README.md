@@ -235,6 +235,13 @@ Developer rules:
 
 - https://docs.x.com/developer-guidelines
 
+### 3) TweetClaw JSON Export (Optional)
+
+- Export reviewed public X/Twitter rows from [TweetClaw](https://github.com/Xquik-dev/tweetclaw).
+- Upload the `.json` file through the same archive import flow.
+- The importer recognizes `tweets`, `items`, `results`, and `data` wrappers, plus `id`, `text`, `author`, `url`, and `media` fields.
+- Use this when you need a local, searchable snapshot beside official archive data.
+
 ## 🔄 Main Usage Flow
 
 1. Sign in
