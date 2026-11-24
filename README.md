@@ -7,6 +7,7 @@ A local-first explorer for archived X (Twitter) posts and replies. The primary w
 ![Flask](https://img.shields.io/badge/Flask-3.1-black?logo=flask&logoColor=white)
 ![Tests](https://img.shields.io/badge/Tests-Pytest-0A9EDC?logo=pytest&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-yellow.svg)
+[![DeepWiki](docs/assets/deepwiki.svg)](https://deepwiki.com/informigados/x-archive-explorer)
 
 ## ✨ Current Status
 
