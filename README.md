@@ -1,15 +1,12 @@
-# X Archive Explorer 🚀
+# 🗃️ X Archive Explorer
+
+A local-first explorer for archived X (Twitter) posts and replies. The primary workflow uses your official export for local indexing, filtered search, and export.
 
 [![CI](https://github.com/informigados/x-archive-explorer/actions/workflows/ci.yml/badge.svg)](https://github.com/informigados/x-archive-explorer/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/Python-3.12%2B-3776AB?logo=python&logoColor=white)
 ![Flask](https://img.shields.io/badge/Flask-3.1-black?logo=flask&logoColor=white)
 ![Tests](https://img.shields.io/badge/Tests-Pytest-0A9EDC?logo=pytest&logoColor=white)
 ![License](https://img.shields.io/badge/License-MIT-yellow.svg)
-
-**Local-first explorer for archived X (Twitter) posts and replies.**
-
-Import your official X export, index everything locally, search with filters, and export results.  
-No scraping as the primary strategy.
 
 ## ✨ Current Status
 
@@ -396,9 +393,9 @@ Contributions are welcome. Please read [`CONTRIBUTING.md`](CONTRIBUTING.md) befo
 
 ## 👥 Authors
 
-- [INformigados](https://github.com/informigados)
 - [Alex Brito](https://github.com/alexbritodev)
+- [INformigados](https://github.com/informigados)
 
 ## 📄 License
 
-This project is licensed under the MIT License. See [`LICENSE`](LICENSE) for details.
+This project is licensed under the [MIT License](LICENSE).
